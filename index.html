@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#17181C">
+<title>MetalGarage </title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="ChatGPT Image Jul 10, 2026, 05_24_30 PM.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="MetalGarage">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --asphalt:#17181C;
+    --panel:#212327;
+    --panel-2:#2A2C31;
+    --panel-3:#33353B;
+    --chrome:#E4E6EA;
+    --chrome-dim:#8D929B;
+    --safety-orange:#FF6B2C;
+    --safety-orange-dim:#7A3A1D;
+    --pit-yellow:#FFC53D;
+    --track-blue:#4C9AEE;
+    --good-green:#4CC38A;
+    --bad-red:#FF5D5D;
+    --hairline:#34363C;
+    --hole:var(--asphalt);
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{height:100%;}
+  body{
+    margin:0;
+    background:var(--asphalt);
+    background-image:
+      radial-gradient(circle at 1px 1px, #2b2d33 1px, transparent 1px);
+    background-size: 22px 22px;
+    color:var(--chrome);
+    font-family:'Inter',system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+    padding-bottom:84px;
+  }
+  h1,h2,h3,.display{font-family:'Oswald',sans-serif; text-transform:uppercase; letter-spacing:0.02em;}
+  .mono{font-family:'JetBrains Mono',monospace;}
+  a{color:inherit;}
+  button{font-family:inherit; cursor:pointer;}
+
+  /* ---------- Top bar ---------- */
+  header.topbar{
+    position:sticky; top:0; z-index:20;
+    background:rgba(23,24,28,0.92);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--hairline);
+    padding:16px 18px 14px;
+  }
+  .brandrow{display:flex; align-items:center; justify-content:space-between;}
+  .brandmark{display:flex; align-items:center; gap:10px;}
+  .brandmark .plate{
+    background:var(--safety-orange);
+    color:#1a1200;
+    font-family:'Oswald',sans-serif;
+    font-weight:700;
+    font-size:13px;
+    padding:4px 8px;
+    border-radius:4px;
+    letter-spacing:0.06em;
+    box-shadow:0 0 0 2px #1a1200 inset;
+  }
+  .brandmark h1{font-size:19px; margin:0; font-weight:600; color:var(--chrome);}
+  .subline{color:var(--chrome-dim); font-size:12px; margin-top:2px;}
+  .iconbtn{
+    background:var(--panel-2); border:1px solid var(--hairline); color:var(--chrome);
+    width:38px; height:38px; border-radius:10px; display:flex; align-items:center; justify-content:center;
+  }
+  .iconbtn svg{width:18px; height:18px;}
+
+  .searchbar{margin-top:12px; display:flex; gap:8px;}
+  .searchbar input[type=text]{
+    flex:1; background:var(--panel-2); border:1px solid var(--hairline); color:var(--chrome);
+    padding:10px 12px; border-radius:10px; font-size:14px; font-family:inherit;
+  }
+  .searchbar input::placeholder{color:var(--chrome-dim);}
+  .filterchip{
+    background:var(--panel-2); border:1px solid var(--hairline); color:var(--chrome-dim);
+    padding:0 12px; border-radius:10px; font-size:13px; white-space:nowrap;
+  }
+  .chiprow{display:flex; gap:8px; margin-top:10px; overflow-x:auto; padding-bottom:2px;}
+  .chiprow::-webkit-scrollbar{display:none;}
+  .chip{
+    flex:0 0 auto; background:var(--panel-2); border:1px solid var(--hairline); color:var(--chrome-dim);
+    padding:6px 13px; border-radius:999px; font-size:12.5px; font-weight:600;
+  }
+  .chip.active{background:var(--safety-orange); border-color:var(--safety-orange); color:#1a1200;}
+
+  main{padding:16px 18px 12px; max-width:640px; margin:0 auto;}
+
+  /* ---------- Pegboard cards (signature element) ---------- */
+  .grid{display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:14px;}
+  @media (min-width:520px){ .grid{grid-template-columns:1fr 1fr 1fr;} }
+
+  .card{
+    position:relative;
+    background:var(--panel);
+    border:1px solid var(--hairline);
+    border-radius:14px;
+    padding-top:22px;
+    overflow:hidden;
+    display:flex; flex-direction:column;
+  }
+  .card .stripe{
+    position:absolute; top:0; left:0; right:0; height:22px;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .card .stripe .peghole{
+    width:11px; height:11px; border-radius:50%; background:var(--hole);
+    box-shadow:0 0 0 3px rgba(0,0,0,0.18) inset;
+  }
+  .card .thumb{
+    width:100%; aspect-ratio:1/0.82; background:var(--panel-2);
+    display:flex; align-items:center; justify-content:center; overflow:hidden;
+  }
+  .card .thumb img{width:100%; height:100%; object-fit:cover; display:block;}
+  .card .thumb .placeholder{color:var(--chrome-dim); opacity:0.35;}
+  .card .thumb .placeholder svg{width:34px; height:34px;}
+  .card .body{padding:10px 11px 12px; display:flex; flex-direction:column; gap:3px; flex:1;}
+  .card .brandline{font-size:10px; font-weight:700; letter-spacing:0.06em; text-transform:uppercase; color:var(--chrome-dim);}
+  .card .name{font-family:'Oswald',sans-serif; font-size:14.5px; font-weight:600; line-height:1.15; color:var(--chrome); text-transform:none;}
+  .card .meta{font-size:11px; color:var(--chrome-dim); margin-top:1px;}
+  .card .bottomrow{display:flex; align-items:center; justify-content:space-between; margin-top:auto; padding-top:8px;}
+  .card .value{font-family:'JetBrains Mono',monospace; font-size:13px; font-weight:700; color:var(--pit-yellow);}
+  .card .qty{
+    font-size:10.5px; color:var(--chrome-dim); background:var(--panel-3); padding:2px 6px; border-radius:6px;
+  }
+  .card.wish .value{color:var(--track-blue);}
+  .card button.cardhit{position:absolute; inset:0; background:transparent; border:none; z-index:5;}
+
+  .badge-cond{
+    position:absolute; top:26px; right:8px; z-index:3;
+    font-size:9.5px; font-weight:700; letter-spacing:0.04em; text-transform:uppercase;
+    padding:2px 6px; border-radius:6px; color:#0d0d0d;
+  }
+
+  /* ---------- Empty state ---------- */
+  .empty{
+    margin-top:40px; text-align:center; color:var(--chrome-dim); padding:20px 12px;
+  }
+  .empty svg{width:52px; height:52px; opacity:0.3; margin-bottom:10px;}
+  .empty h3{color:var(--chrome); font-size:16px; margin:6px 0 4px;}
+  .empty p{font-size:13px; margin:0 0 16px; line-height:1.5;}
+  .empty .cta{
+    display:inline-block; background:var(--safety-orange); color:#1a1200; border:none;
+    padding:11px 20px; border-radius:10px; font-weight:700; font-size:13px;
+    text-transform:uppercase; letter-spacing:0.03em;
+  }
+
+  /* ---------- Stats ---------- */
+  .statgrid{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:14px;}
+  .statcard{
+    background:var(--panel); border:1px solid var(--hairline); border-radius:14px; padding:14px;
+  }
+  .statcard .label{font-size:10.5px; color:var(--chrome-dim); text-transform:uppercase; letter-spacing:0.05em; font-weight:700;}
+  .statcard .num{font-family:'JetBrains Mono',monospace; font-size:22px; font-weight:700; margin-top:6px; color:var(--chrome);}
+  .statcard .num.pos{color:var(--good-green);}
+  .statcard .num.neg{color:var(--bad-red);}
+  .statcard.wide{grid-column:1/3;}
+
+  .breakdown{margin-top:18px;}
+  .breakdown h3{font-size:13px; color:var(--chrome-dim); margin:0 0 10px; letter-spacing:0.05em;}
+  .barrow{display:flex; align-items:center; gap:10px; margin-bottom:9px;}
+  .barrow .barlabel{width:78px; font-size:12px; color:var(--chrome); flex-shrink:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .barrow .bartrack{flex:1; height:9px; background:var(--panel-3); border-radius:5px; overflow:hidden;}
+  .barrow .barfill{height:100%; background:var(--safety-orange); border-radius:5px;}
+  .barrow .barnum{width:28px; text-align:right; font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--chrome-dim);}
+
+  .backup{display:flex; gap:10px; margin-top:20px;}
+  .backup button{
+    flex:1; background:var(--panel-2); border:1px solid var(--hairline); color:var(--chrome);
+    padding:12px; border-radius:12px; font-weight:600; font-size:13px;
+  }
+
+  /* ---------- Bottom nav ---------- */
+  nav.tabbar{
+    position:fixed; bottom:0; left:0; right:0; z-index:30;
+    background:rgba(23,24,28,0.96); backdrop-filter:blur(12px);
+    border-top:1px solid var(--hairline);
+    display:flex; padding:8px 6px calc(8px + env(safe-area-inset-bottom));
+  }
+  .tabbtn{
+    flex:1; background:none; border:none; display:flex; flex-direction:column; align-items:center; gap:3px;
+    color:var(--chrome-dim); padding:6px 2px; border-radius:10px; font-size:10.5px; font-weight:600;
+  }
+  .tabbtn svg{width:21px; height:21px;}
+  .tabbtn.active{color:var(--safety-orange);}
+  .tabbtn.fab{color:var(--asphalt);}
+  .tabbtn.fab .fabcircle{
+    width:42px; height:42px; border-radius:50%; background:var(--safety-orange);
+    display:flex; align-items:center; justify-content:center; margin-bottom:2px;
+    box-shadow:0 4px 14px rgba(255,107,44,0.35);
+  }
+  .tabbtn.fab.active{color:var(--chrome-dim);}
+
+  /* ---------- Modal / form ---------- */
+  .modal-backdrop{
+    position:fixed; inset:0; background:rgba(10,10,12,0.6); z-index:50;
+    display:none; align-items:flex-end; justify-content:center;
+  }
+  .modal-backdrop.open{display:flex;}
+  .modal{
+    width:100%; max-width:640px; max-height:92vh; overflow-y:auto;
+    background:var(--asphalt); border-radius:20px 20px 0 0; border:1px solid var(--hairline); border-bottom:none;
+    padding:6px 18px calc(24px + env(safe-area-inset-bottom));
+    animation:slideup 0.22s ease-out;
+  }
+  @keyframes slideup{from{transform:translateY(30px); opacity:0.4;} to{transform:translateY(0); opacity:1;}}
+  .modal-handle{width:36px; height:4px; background:var(--hairline); border-radius:3px; margin:10px auto 14px;}
+  .modal h2{font-size:18px; margin:0 0 4px;}
+  .modal .close{position:absolute; right:16px; top:16px;}
+  .modal-head{position:relative; padding-top:6px;}
+
+  .segrow{display:flex; background:var(--panel-2); border-radius:11px; padding:3px; margin:14px 0; border:1px solid var(--hairline);}
+  .segbtn{flex:1; padding:9px; border:none; background:none; color:var(--chrome-dim); border-radius:9px; font-weight:700; font-size:12.5px; text-transform:uppercase; letter-spacing:0.03em;}
+  .segbtn.active{background:var(--safety-orange); color:#1a1200;}
+
+  .field{margin-bottom:13px;}
+  .field label{display:block; font-size:11.5px; color:var(--chrome-dim); font-weight:600; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:6px;}
+  .field input[type=text], .field input[type=number], .field input[type=date], .field select, .field textarea{
+    width:100%; background:var(--panel-2); border:1px solid var(--hairline); color:var(--chrome);
+    padding:11px 12px; border-radius:10px; font-size:14.5px; font-family:inherit;
+  }
+  .field textarea{resize:vertical; min-height:60px;}
+  .row2{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+  .chipselect{display:flex; flex-wrap:wrap; gap:7px;}
+  .chipselect .opt{
+    background:var(--panel-2); border:1px solid var(--hairline); color:var(--chrome-dim);
+    padding:8px 13px; border-radius:999px; font-size:12.5px; font-weight:600;
+  }
+  .chipselect .opt.active{background:var(--track-blue); border-color:var(--track-blue); color:#08131f;}
+  .condset .opt.active{background:var(--pit-yellow); border-color:var(--pit-yellow); color:#241a00;}
+
+  .photopick{
+    display:flex; align-items:center; gap:12px; background:var(--panel-2); border:1px dashed var(--hairline);
+    border-radius:12px; padding:10px; margin-bottom:13px;
+  }
+  .photopick .prev{width:60px; height:60px; border-radius:9px; background:var(--panel-3); overflow:hidden; flex-shrink:0; display:flex; align-items:center; justify-content:center;}
+  .photopick .prev img{width:100%; height:100%; object-fit:cover;}
+  .photopick .prev svg{width:22px; height:22px; color:var(--chrome-dim);}
+  .photopick .txt{font-size:12.5px; color:var(--chrome-dim); flex:1;}
+  .photopick .pickbtn{background:var(--panel-3); border:1px solid var(--hairline); color:var(--chrome); padding:8px 12px; border-radius:9px; font-size:12px; font-weight:600;}
+
+  .formactions{display:flex; gap:10px; margin-top:6px;}
+  .btn{flex:1; padding:13px; border-radius:12px; font-weight:700; font-size:13.5px; text-transform:uppercase; letter-spacing:0.03em; border:none;}
+  .btn.primary{background:var(--safety-orange); color:#1a1200;}
+  .btn.ghost{background:var(--panel-2); color:var(--chrome); border:1px solid var(--hairline);}
+  .btn.danger{background:transparent; color:var(--bad-red); border:1px solid rgba(255,93,93,0.35);}
+
+  .toast{
+    position:fixed; bottom:96px; left:50%; transform:translateX(-50%) translateY(10px);
+    background:var(--panel-3); color:var(--chrome); padding:11px 18px; border-radius:12px; font-size:13px;
+    border:1px solid var(--hairline); z-index:60; opacity:0; pointer-events:none; transition:all 0.25s ease;
+    display:flex; align-items:center; gap:8px; white-space:nowrap;
+  }
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+  .toast .dot{width:7px; height:7px; border-radius:50%; background:var(--good-green);}
+
+  .hidden{display:none !important;}
+  input[type=file]{display:none;}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brandrow">
+    <div class="brandmark">
+      <span class="plate">GL</span>
+      <div>
+        <h1>MetalGarage</h1>
+        <div class="subline" id="headerSub">Evokes the feeling of a physical collection space</div>
+      </div>
+    </div>
+    <button class="iconbtn" id="statsShortcut" title="Stats">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V10M12 20V4M20 20v-7"/></svg>
+    </button>
+  </div>
+  <div class="searchbar">
+    <input type="text" id="searchInput" placeholder="Search model, brand, series…">
+  </div>
+  <div class="chiprow" id="brandChips"></div>
+</header>
+
+<main>
+  <div id="garageView"></div>
+  <div id="wishView" class="hidden"></div>
+  <div id="statsView" class="hidden"></div>
+</main>
+
+<nav class="tabbar">
+  <button class="tabbtn active" data-tab="garage">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l2-6h14l2 6M3 11v8h18v-8M3 11h18M7 15h.01M17 15h.01"/></svg>
+    Garage
+  </button>
+  <button class="tabbtn" data-tab="wishlist">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 00-7.8 0L12 5.6l-1-1a5.5 5.5 0 00-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 000-7.8z"/></svg>
+    Wishlist
+  </button>
+  <button class="tabbtn fab" data-tab="add">
+    <span class="fabcircle">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#1a1200" stroke-width="2.4" width="20" height="20"><path d="M12 5v14M5 12h14"/></svg>
+    </span>
+    Add
+  </button>
+  <button class="tabbtn" data-tab="stats">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V10M12 20V4M20 20v-7"/></svg>
+    Stats
+  </button>
+  <button class="tabbtn" data-tab="backup">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+    Backup
+  </button>
+</nav>
+
+<!-- Add / Edit Modal -->
+<div class="modal-backdrop" id="formBackdrop">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-head">
+      <h2 id="formTitle">Add a car</h2>
+      <button class="iconbtn close" id="closeForm">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+
+    <div class="segrow">
+      <button class="segbtn active" id="segCollection" type="button">I own it</button>
+      <button class="segbtn" id="segWishlist" type="button">Wishlist</button>
+    </div>
+
+    <div class="photopick" id="photoPick">
+      <div class="prev" id="photoPreview">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h3l2-3h6l2 3h3v13H4V7z"/><circle cx="12" cy="13" r="3.5"/></svg>
+      </div>
+      <div class="txt">Add a photo of the car (optional)</div>
+      <button class="pickbtn" type="button" id="photoBtn">Choose</button>
+      <input type="file" id="photoInput" accept="image/*" capture="environment">
+    </div>
+
+    <form id="itemForm">
+      <div class="field">
+        <label>Brand</label>
+        <div class="chipselect" id="brandSelect">
+          <span class="opt active" data-brand="Hot Wheels">Hot Wheels</span>
+          <span class="opt" data-brand="Matchbox">Matchbox</span>
+          <span class="opt" data-brand="Mini GT">Mini GT</span>
+          <span class="opt" data-brand="other">Other…</span>
+        </div>
+        <input type="text" id="brandOther" placeholder="Brand name" style="margin-top:8px;" class="hidden">
+      </div>
+
+      <div class="field">
+        <label>Model name</label>
+        <input type="text" id="modelName" placeholder="e.g. '67 Camaro, Supra MK4, GT-R R34" required>
+      </div>
+
+      <div class="row2">
+        <div class="field">
+          <label>Series / set</label>
+          <input type="text" id="series" placeholder="e.g. Fast & Furious">
+        </div>
+        <div class="field">
+          <label>Scale</label>
+          <input type="text" id="scale" placeholder="e.g. 1:64">
+        </div>
+      </div>
+
+      <div class="row2">
+        <div class="field">
+          <label>Color</label>
+          <input type="text" id="color" placeholder="e.g. Spectraflame Green">
+        </div>
+        <div class="field">
+          <label>Year</label>
+          <input type="text" id="year" placeholder="e.g. 2024" inputmode="numeric">
+        </div>
+      </div>
+
+      <div class="field" id="condField">
+        <label>Condition</label>
+        <div class="chipselect condset" id="condSelect">
+          <span class="opt active" data-cond="Mint">Mint</span>
+          <span class="opt" data-cond="Near Mint">Near Mint</span>
+          <span class="opt" data-cond="Good">Good</span>
+          <span class="opt" data-cond="Fair">Fair</span>
+          <span class="opt" data-cond="Poor">Poor</span>
+        </div>
+      </div>
+
+      <div class="row2" id="ownedFields">
+        <div class="field">
+          <label>Quantity</label>
+          <input type="number" id="quantity" min="1" value="1">
+        </div>
+        <div class="field">
+          <label>Purchase price</label>
+          <input type="number" id="purchasePrice" min="0" step="0.01" placeholder="0.00" inputmode="decimal">
+        </div>
+      </div>
+      <div class="row2" id="ownedFields2">
+        <div class="field">
+          <label>Current value</label>
+          <input type="number" id="currentValue" min="0" step="0.01" placeholder="0.00" inputmode="decimal">
+        </div>
+        <div class="field">
+          <label>Purchase date</label>
+          <input type="date" id="purchaseDate">
+        </div>
+      </div>
+
+      <div class="field hidden" id="targetPriceField">
+        <label>Target price</label>
+        <input type="number" id="targetPrice" min="0" step="0.01" placeholder="What you'd pay" inputmode="decimal">
+      </div>
+
+      <div class="field">
+        <label>Notes</label>
+        <textarea id="notes" placeholder="Where you got it, packaging, anything worth remembering…"></textarea>
+      </div>
+
+      <div class="formactions">
+        <button type="button" class="btn danger hidden" id="deleteBtn">Delete</button>
+        <button type="submit" class="btn primary">Save to garage</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="toast" id="toast"><span class="dot"></span><span id="toastText">Saved</span></div>
+
+<script>
+/* ================= State ================= */
+const STORAGE_KEY = 'garage-log-data-v1';
+let state = loadState();
+let editingId = null;
+let editingType = null; // 'collection' | 'wishlist'
+let currentTab = 'garage';
+let activeBrandFilter = 'All';
+let searchQuery = '';
+let pendingPhoto = null;
+
+function loadState(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(raw) return JSON.parse(raw);
+  }catch(e){ console.error('Load failed', e); }
+  return { collection: [], wishlist: [] };
+}
+function saveState(){
+  try{
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  }catch(e){
+    alert('Storage is full. Try removing a few photos or exporting a backup and clearing old items.');
+    console.error(e);
+  }
+}
+function uid(){ return 'id' + Date.now().toString(36) + Math.random().toString(36).slice(2,8); }
+
+/* ================= Helpers ================= */
+function fmtMoney(n){
+  n = Number(n)||0;
+  return '$' + n.toLocaleString(undefined,{minimumFractionDigits:2, maximumFractionDigits:2});
+}
+function escapeHtml(s){
+  return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function brandColor(brand){
+  const b = (brand||'').toLowerCase();
+  if(b.includes('hot wheels')) return '#FF6B2C';
+  if(b.includes('matchbox')) return '#4C9AEE';
+  if(b.includes('mini gt')) return '#B7BDC6';
+  return '#FFC53D';
+}
+function condColor(cond){
+  switch(cond){
+    case 'Mint': return '#4CC38A';
+    case 'Near Mint': return '#8FD68A';
+    case 'Good': return '#FFC53D';
+    case 'Fair': return '#FF9B3D';
+    case 'Poor': return '#FF5D5D';
+    default: return '#8D929B';
+  }
+}
+function showToast(msg){
+  const t = document.getElementById('toast');
+  document.getElementById('toastText').textContent = msg;
+  t.classList.add('show');
+  clearTimeout(showToast._t);
+  showToast._t = setTimeout(()=>t.classList.remove('show'), 1800);
+}
+function resizeImage(file, maxDim, cb){
+  const reader = new FileReader();
+  reader.onload = e => {
+    const img = new Image();
+    img.onload = () => {
+      let w = img.width, h = img.height;
+      if(w > h && w > maxDim){ h = Math.round(h*maxDim/w); w = maxDim; }
+      else if(h >= w && h > maxDim){ w = Math.round(w*maxDim/h); h = maxDim; }
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img,0,0,w,h);
+      cb(canvas.toDataURL('image/jpeg', 0.72));
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+/* ================= Tabs ================= */
+document.querySelectorAll('.tabbtn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    const tab = btn.dataset.tab;
+    if(tab === 'add'){ openForm(); return; }
+    setTab(tab);
+  });
+});
+document.getElementById('statsShortcut').addEventListener('click', ()=> setTab('stats'));
+
+function setTab(tab){
+  currentTab = tab;
+  document.querySelectorAll('.tabbtn').forEach(b=>b.classList.toggle('active', b.dataset.tab===tab));
+  document.getElementById('garageView').classList.toggle('hidden', tab!=='garage');
+  document.getElementById('wishView').classList.toggle('hidden', tab!=='wishlist');
+  document.getElementById('statsView').classList.toggle('hidden', tab!=='stats' && tab!=='backup');
+  document.getElementById('searchInput').parentElement.style.display = (tab==='garage'||tab==='wishlist') ? 'flex' : 'none';
+  document.getElementById('brandChips').style.display = (tab==='garage'||tab==='wishlist') ? 'flex' : 'none';
+  document.getElementById('headerSub').textContent =
+    tab==='garage' ? 'Evokes the feeling of a physical collection space' :
+    tab==='wishlist' ? 'Cars you\'re hunting for' :
+    tab==='stats' ? 'Collection stats' : 'Backup & restore';
+  renderAll();
+}
+
+document.getElementById('searchInput').addEventListener('input', e=>{ searchQuery = e.target.value.toLowerCase(); renderAll(); });
+
+/* ================= Rendering ================= */
+function allBrands(){
+  const set = new Set();
+  [...state.collection, ...state.wishlist].forEach(i=> set.add(i.brand||'Other'));
+  return ['All', ...Array.from(set).sort()];
+}
+function renderChips(){
+  const wrap = document.getElementById('brandChips');
+  wrap.innerHTML = '';
+  allBrands().forEach(b=>{
+    const chip = document.createElement('span');
+    chip.className = 'chip' + (b===activeBrandFilter?' active':'');
+    chip.textContent = b;
+    chip.addEventListener('click', ()=>{ activeBrandFilter = b; renderAll(); });
+    wrap.appendChild(chip);
+  });
+}
+
+function filterList(list){
+  return list.filter(i=>{
+    const matchesBrand = activeBrandFilter==='All' || (i.brand||'Other')===activeBrandFilter;
+    const hay = [i.brand,i.model,i.series,i.color,i.year].join(' ').toLowerCase();
+    const matchesSearch = !searchQuery || hay.includes(searchQuery);
+    return matchesBrand && matchesSearch;
+  }).sort((a,b)=> (b.dateAdded||0) - (a.dateAdded||0));
+}
+
+function cardHtml(item, type){
+  const isWish = type==='wishlist';
+  const bc = brandColor(item.brand);
+  const priceLabel = isWish ? (item.targetPrice ? fmtMoney(item.targetPrice) : '—') : fmtMoney(item.currentValue || item.purchasePrice || 0);
+  const condBadge = !isWish && item.condition ? `<div class="badge-cond" style="background:${condColor(item.condition)}">${escapeHtml(item.condition)}</div>` : '';
+  return `
+  <div class="card ${isWish?'wish':''}" data-id="${item.id}" data-type="${type}">
+    <button class="cardhit" aria-label="Edit ${escapeHtml(item.model)}"></button>
+    <div class="stripe" style="background:${bc}22;"><span class="peghole"></span></div>
+    ${condBadge}
+    <div class="thumb">
+      ${item.photo ? `<img src="${item.photo}" alt="">` : `<div class="placeholder"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 11l2-6h14l2 6M3 11v8h18v-8M3 11h18M7 15h.01M17 15h.01"/></svg></div>`}
+    </div>
+    <div class="body">
+      <div class="brandline" style="color:${bc}">${escapeHtml(item.brand||'Other')}</div>
+      <div class="name">${escapeHtml(item.model||'Untitled')}</div>
+      <div class="meta">${[item.series, item.scale].filter(Boolean).map(escapeHtml).join(' · ')}</div>
+      <div class="bottomrow">
+        <span class="value">${priceLabel}</span>
+        ${!isWish ? `<span class="qty">×${item.quantity||1}</span>` : ''}
+      </div>
+    </div>
+  </div>`;
+}
+
+function emptyHtml(kind){
+  if(kind==='garage'){
+    return `<div class="empty">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 11l2-6h14l2 6M3 11v8h18v-8M3 11h18M7 15h.01M17 15h.01"/></svg>
+      <h3>Empty pegboard</h3>
+      <p>Nothing logged yet. Add your first diecast to start your garage.</p>
+      <button class="cta" onclick="openForm()">Add a car</button>
+    </div>`;
+  }
+  return `<div class="empty">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20.8 4.6a5.5 5.5 0 00-7.8 0L12 5.6l-1-1a5.5 5.5 0 00-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 000-7.8z"/></svg>
+    <h3>Nothing on the hunt list</h3>
+    <p>Save cars you're chasing here so you never buy a duplicate at the show.</p>
+    <button class="cta" onclick="openForm(true)">Add to wishlist</button>
+  </div>`;
+}
+
+function renderGarage(){
+  const list = filterList(state.collection);
+  const el = document.getElementById('garageView');
+  el.innerHTML = list.length
+    ? `<div class="grid">${list.map(i=>cardHtml(i,'collection')).join('')}</div>`
+    : emptyHtml('garage');
+}
+function renderWishlist(){
+  const list = filterList(state.wishlist);
+  const el = document.getElementById('wishView');
+  el.innerHTML = list.length
+    ? `<div class="grid">${list.map(i=>cardHtml(i,'wishlist')).join('')}</div>`
+    : emptyHtml('wishlist');
+}
+
+function renderStats(){
+  const el = document.getElementById('statsView');
+  if(currentTab==='backup'){
+    el.innerHTML = `
+      <div class="statgrid">
+        <div class="statcard wide">
+          <div class="label">Your data</div>
+          <div class="num" style="font-size:15px; line-height:1.5; font-family:'Inter',sans-serif; font-weight:500; color:var(--chrome-dim);">
+            Everything lives only on this device, in this browser. Export a backup file regularly — clearing browser data or switching phones will erase it otherwise.
+          </div>
+        </div>
+      </div>
+      <div class="backup">
+        <button id="exportBtn">⬇ Export backup (.json)</button>
+        <button id="importBtn">⬆ Import backup</button>
+      </div>
+      <input type="file" id="importInput" accept="application/json" class="hidden">
+      <div class="backup">
+        <button id="wipeBtn" style="color:var(--bad-red);">🗑 Erase all data</button>
+      </div>
+    `;
+    document.getElementById('exportBtn').addEventListener('click', exportBackup);
+    document.getElementById('importBtn').addEventListener('click', ()=>document.getElementById('importInput').click());
+    document.getElementById('importInput').addEventListener('change', importBackup);
+    document.getElementById('wipeBtn').addEventListener('click', wipeData);
+    return;
+  }
+
+  const col = state.collection;
+  const totalItems = col.reduce((s,i)=> s + (Number(i.quantity)||1), 0);
+  const totalSpent = col.reduce((s,i)=> s + (Number(i.purchasePrice)||0)*(Number(i.quantity)||1), 0);
+  const totalValue = col.reduce((s,i)=> s + (Number(i.currentValue)||Number(i.purchasePrice)||0)*(Number(i.quantity)||1), 0);
+  const gain = totalValue - totalSpent;
+  const gainPct = totalSpent>0 ? (gain/totalSpent*100) : 0;
+
+  const byBrand = {};
+  col.forEach(i=>{ const b=i.brand||'Other'; byBrand[b]=(byBrand[b]||0)+(Number(i.quantity)||1); });
+  const maxBrand = Math.max(1, ...Object.values(byBrand));
+  const brandRows = Object.entries(byBrand).sort((a,b)=>b[1]-a[1]).slice(0,8)
+    .map(([b,n])=> `<div class="barrow">
+        <div class="barlabel">${escapeHtml(b)}</div>
+        <div class="bartrack"><div class="barfill" style="width:${(n/maxBrand*100)}%; background:${brandColor(b)}"></div></div>
+        <div class="barnum">${n}</div>
+      </div>`).join('');
+
+  el.innerHTML = `
+    <div class="statgrid">
+      <div class="statcard"><div class="label">Cars in garage</div><div class="num">${totalItems}</div></div>
+      <div class="statcard"><div class="label">On wishlist</div><div class="num">${state.wishlist.length}</div></div>
+      <div class="statcard"><div class="label">Total spent</div><div class="num mono">${fmtMoney(totalSpent)}</div></div>
+      <div class="statcard"><div class="label">Est. value</div><div class="num mono">${fmtMoney(totalValue)}</div></div>
+      <div class="statcard wide">
+        <div class="label">Gain / loss</div>
+        <div class="num ${gain>=0?'pos':'neg'}">${gain>=0?'+':''}${fmtMoney(gain)} <span style="font-size:13px; font-family:'Inter',sans-serif; font-weight:600;">(${gain>=0?'+':''}${gainPct.toFixed(1)}%)</span></div>
+      </div>
+    </div>
+    <div class="breakdown">
+      <h3>By brand</h3>
+      ${brandRows || '<div style="color:var(--chrome-dim); font-size:13px;">Add cars to see a breakdown.</div>'}
+    </div>
+  `;
+}
+
+function renderAll(){
+  renderChips();
+  renderGarage();
+  renderWishlist();
+  renderStats();
+  attachCardHandlers();
+}
+
+function attachCardHandlers(){
+  document.querySelectorAll('.card').forEach(card=>{
+    card.querySelector('.cardhit').addEventListener('click', ()=>{
+      openForm(card.dataset.type==='wishlist', card.dataset.id, card.dataset.type);
+    });
+  });
+}
+
+/* ================= Backup ================= */
+function exportBackup(){
+  const blob = new Blob([JSON.stringify(state,null,2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const d = new Date().toISOString().slice(0,10);
+  a.href = url; a.download = `garage-log-backup-${d}.json`;
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+  showToast('Backup downloaded');
+}
+function importBackup(e){
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try{
+      const data = JSON.parse(ev.target.result);
+      if(!data.collection || !data.wishlist) throw new Error('bad file');
+      if(confirm('This will replace your current data with the backup file. Continue?')){
+        state = { collection: data.collection||[], wishlist: data.wishlist||[] };
+        saveState();
+        renderAll();
+        showToast('Backup restored');
+      }
+    }catch(err){
+      alert('Could not read that file — make sure it\'s a MetalGarage backup .json');
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+}
+function wipeData(){
+  if(confirm('Erase everything? This cannot be undone — export a backup first if you want to keep your data.')){
+    if(confirm('Really sure? All cars and wishlist items will be deleted permanently.')){
+      state = { collection: [], wishlist: [] };
+      saveState();
+      renderAll();
+      showToast('All data erased');
+    }
+  }
+}
+
+/* ================= Form ================= */
+const backdrop = document.getElementById('formBackdrop');
+const form = document.getElementById('itemForm');
+
+document.getElementById('closeForm').addEventListener('click', closeForm);
+backdrop.addEventListener('click', e=>{ if(e.target===backdrop) closeForm(); });
+
+document.getElementById('segCollection').addEventListener('click', ()=> setFormType('collection'));
+document.getElementById('segWishlist').addEventListener('click', ()=> setFormType('wishlist'));
+
+function setFormType(type){
+  editingType = type;
+  document.getElementById('segCollection').classList.toggle('active', type==='collection');
+  document.getElementById('segWishlist').classList.toggle('active', type==='wishlist');
+  document.getElementById('ownedFields').classList.toggle('hidden', type==='wishlist');
+  document.getElementById('ownedFields2').classList.toggle('hidden', type==='wishlist');
+  document.getElementById('condField').classList.remove('hidden');
+  document.getElementById('targetPriceField').classList.toggle('hidden', type==='collection');
+  form.querySelector('.btn.primary').textContent = type==='wishlist' ? 'Save to wishlist' : 'Save to garage';
+}
+
+document.querySelectorAll('#brandSelect .opt').forEach(opt=>{
+  opt.addEventListener('click', ()=>{
+    document.querySelectorAll('#brandSelect .opt').forEach(o=>o.classList.remove('active'));
+    opt.classList.add('active');
+    document.getElementById('brandOther').classList.toggle('hidden', opt.dataset.brand!=='other');
+    if(opt.dataset.brand==='other') document.getElementById('brandOther').focus();
+  });
+});
+document.querySelectorAll('#condSelect .opt').forEach(opt=>{
+  opt.addEventListener('click', ()=>{
+    document.querySelectorAll('#condSelect .opt').forEach(o=>o.classList.remove('active'));
+    opt.classList.add('active');
+  });
+});
+
+document.getElementById('photoBtn').addEventListener('click', ()=> document.getElementById('photoInput').click());
+document.getElementById('photoInput').addEventListener('change', e=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  resizeImage(file, 500, dataUrl=>{
+    pendingPhoto = dataUrl;
+    document.getElementById('photoPreview').innerHTML = `<img src="${dataUrl}" alt="">`;
+  });
+});
+
+function openForm(wishlistDefault, id, type){
+  form.reset();
+  pendingPhoto = null;
+  editingId = id || null;
+  editingType = type || (wishlistDefault ? 'wishlist' : 'collection');
+  document.getElementById('photoPreview').innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h3l2-3h6l2 3h3v13H4V7z"/><circle cx="12" cy="13" r="3.5"/></svg>`;
+  document.querySelectorAll('#brandSelect .opt').forEach(o=>o.classList.remove('active'));
+  document.getElementById('brandOther').classList.add('hidden');
+  document.querySelectorAll('#condSelect .opt').forEach(o=>o.classList.remove('active'));
+  document.getElementById('deleteBtn').classList.add('hidden');
+
+  if(editingId){
+    const item = state[editingType].find(i=>i.id===editingId);
+    document.getElementById('formTitle').textContent = 'Edit car';
+    document.getElementById('deleteBtn').classList.remove('hidden');
+    const brandOpt = [...document.querySelectorAll('#brandSelect .opt')].find(o=>o.dataset.brand===item.brand);
+    if(brandOpt) brandOpt.classList.add('active');
+    else{
+      document.querySelector('#brandSelect .opt[data-brand="other"]').classList.add('active');
+      document.getElementById('brandOther').classList.remove('hidden');
+      document.getElementById('brandOther').value = item.brand||'';
+    }
+    document.getElementById('modelName').value = item.model||'';
+    document.getElementById('series').value = item.series||'';
+    document.getElementById('scale').value = item.scale||'';
+    document.getElementById('color').value = item.color||'';
+    document.getElementById('year').value = item.year||'';
+    const condOpt = [...document.querySelectorAll('#condSelect .opt')].find(o=>o.dataset.cond===item.condition);
+    (condOpt||document.querySelector('#condSelect .opt')).classList.add('active');
+    document.getElementById('quantity').value = item.quantity||1;
+    document.getElementById('purchasePrice').value = item.purchasePrice||'';
+    document.getElementById('currentValue').value = item.currentValue||'';
+    document.getElementById('purchaseDate').value = item.purchaseDate||'';
+    document.getElementById('targetPrice').value = item.targetPrice||'';
+    document.getElementById('notes').value = item.notes||'';
+    if(item.photo){ pendingPhoto = item.photo; document.getElementById('photoPreview').innerHTML = `<img src="${item.photo}" alt="">`; }
+  } else {
+    document.getElementById('formTitle').textContent = editingType==='wishlist' ? 'Add to wishlist' : 'Add a car';
+    document.querySelector('#brandSelect .opt').classList.add('active');
+    document.querySelector('#condSelect .opt').classList.add('active');
+    document.getElementById('quantity').value = 1;
+  }
+  setFormType(editingType);
+  backdrop.classList.add('open');
+}
+function closeForm(){
+  backdrop.classList.remove('open');
+  editingId = null;
+}
+
+document.getElementById('deleteBtn').addEventListener('click', ()=>{
+  if(!editingId) return;
+  if(confirm('Delete this from your ' + (editingType==='wishlist'?'wishlist':'garage') + '?')){
+    state[editingType] = state[editingType].filter(i=>i.id!==editingId);
+    saveState();
+    closeForm();
+    renderAll();
+    showToast('Deleted');
+  }
+});
+
+form.addEventListener('submit', e=>{
+  e.preventDefault();
+  const brandOptActive = document.querySelector('#brandSelect .opt.active');
+  const brand = brandOptActive && brandOptActive.dataset.brand==='other'
+    ? (document.getElementById('brandOther').value.trim() || 'Other')
+    : (brandOptActive ? brandOptActive.dataset.brand : 'Other');
+  const cond = document.querySelector('#condSelect .opt.active')?.dataset.cond || 'Good';
+  const model = document.getElementById('modelName').value.trim();
+  if(!model){ showToast('Add a model name'); return; }
+
+  const item = {
+    id: editingId || uid(),
+    brand, model,
+    series: document.getElementById('series').value.trim(),
+    scale: document.getElementById('scale').value.trim(),
+    color: document.getElementById('color').value.trim(),
+    year: document.getElementById('year').value.trim(),
+    condition: cond,
+    notes: document.getElementById('notes').value.trim(),
+    photo: pendingPhoto,
+    dateAdded: (editingId && state[editingType].find(i=>i.id===editingId)?.dateAdded) || Date.now()
+  };
+
+  if(editingType==='collection'){
+    item.quantity = Math.max(1, parseInt(document.getElementById('quantity').value)||1);
+    item.purchasePrice = parseFloat(document.getElementById('purchasePrice').value)||0;
+    item.currentValue = parseFloat(document.getElementById('currentValue').value)||0;
+    item.purchaseDate = document.getElementById('purchaseDate').value;
+  } else {
+    item.targetPrice = parseFloat(document.getElementById('targetPrice').value)||0;
+  }
+
+  // If editing but type changed (moving), remove from old list first
+  if(editingId){
+    ['collection','wishlist'].forEach(t=>{ state[t] = state[t].filter(i=>i.id!==editingId); });
+  }
+  state[editingType].push(item);
+  saveState();
+  closeForm();
+  setTab(editingType==='wishlist' ? 'wishlist' : 'garage');
+  showToast(editingId ? 'Updated' : 'Added to ' + (editingType==='wishlist'?'wishlist':'garage'));
+});
+
+/* ================= Init ================= */
+setFormType('collection');
+renderAll();
+
+// Register service worker for offline use (only works when hosted over http/https)
+if('serviceWorker' in navigator && (location.protocol==='https:' || location.hostname==='localhost')){
+  navigator.serviceWorker.register('sw.js').catch(()=>{});
+}
+</script>
+</body>
+</html>
